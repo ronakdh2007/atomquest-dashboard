@@ -8,7 +8,7 @@
 
   <!-- TOP NAVBAR -->
   <nav class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">Goal Portal — Employee</h1>
+    <h1 class="text-xl font-bold">Goal Portal — <span id="employeeName"></span></h1>
     <a href="index.html" class="text-sm underline">Logout</a>
   </nav>
 
@@ -107,6 +107,7 @@
             <th class="border p-2 text-left">UoM</th>
             <th class="border p-2 text-left">Target</th>
             <th class="border p-2 text-left">Weightage</th>
+            <th class="border p-2 text-left">Status</th>
             <th class="border p-2 text-left">Action</th>
           </tr>
         </thead>
@@ -127,122 +128,219 @@
 
   </div>
 
-  <script>
-    // This array stores all goals the employee adds — like an array of structs in C
-    let goals = []
+  <script type="module">
+  // Import supabase connection we set up
+  import { supabase } from './js/supabase.js'
 
-    // Shows one section and hides the other — like switching screens
-    function showSection(sectionName) {
-      document.getElementById('createGoal').classList.add('hidden')
-      document.getElementById('myGoals').classList.add('hidden')
-      document.getElementById(sectionName).classList.remove('hidden')
+  // Current logged in user — we'll get this from localStorage
+  // For now we'll hardcode John Doe for testing
+  let currentUser = null
+  let goals = []
 
-      // Refresh the table every time My Goals is opened
-      if (sectionName === 'myGoals') renderGoals()
+  // When page loads, get the current user from database
+  async function init() {
+    let { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', 'john@atomberg.com')
+      .single()
+
+    if (error) {
+      alert('Error loading user: ' + error.message)
+      return
     }
 
-    function addGoal() {
-      // Read all form values — like scanf in C
-      let title      = document.getElementById('goalTitle').value
-      let desc       = document.getElementById('goalDesc').value
-      let thrustArea = document.getElementById('thrustArea').value
-      let uomType    = document.getElementById('uomType').value
-      let target     = document.getElementById('goalTarget').value
-      let weightage  = parseInt(document.getElementById('goalWeightage').value)
+    currentUser = data
+    document.getElementById('employeeName').innerText = data.name
 
-      let errorMsg = document.getElementById('errorMsg')
+    // Load existing goals from database
+    loadGoals()
+  }
 
-      // VALIDATION RULES from the problem statement
-      if (!title || !target || !weightage) {
-        showError('Please fill in all fields.')
-        return
-      }
-      if (!weightage || weightage < 10 || !Number.isInteger(weightage)) {
-        showError('Weightage must be a whole number of at least 10%.')
-        return
-      }
-      if (goals.length >= 8) {
-        showError('Maximum 8 goals allowed.')
-        return
-      }
+  // Load goals from database
+  async function loadGoals() {
+    let { data, error } = await supabase
+      .from('goals')
+      .select('*')
+      .eq('employee_id', currentUser.id)
 
-      // Check total weightage won't exceed 100
-      let currentTotal = goals.reduce((sum, g) => sum + g.weightage, 0)
-      if (currentTotal + weightage > 100) {
-        showError('Total weightage cannot exceed 100%. You have ' + (100 - currentTotal) + '% remaining.')
-        return
-      }
-
-      // Hide error if everything is fine
-      errorMsg.classList.add('hidden')
-
-      // Add goal to our array — like adding to a struct array in C
-      goals.push({ title, desc, thrustArea, uomType, target, weightage })
-
-      // Clear the form
-      document.getElementById('goalTitle').value = ''
-      document.getElementById('goalDesc').value = ''
-      document.getElementById('goalTarget').value = ''
-      document.getElementById('goalWeightage').value = ''
-
-      alert('Goal added! Add more or go to My Goals to submit.')
+    if (error) {
+      alert('Error loading goals: ' + error.message)
+      return
     }
 
-    function showError(message) {
-      let errorMsg = document.getElementById('errorMsg')
-      errorMsg.innerText = message
-      errorMsg.classList.remove('hidden')
+    goals = data
+    renderGoals()
+  }
+
+  // Make functions available to HTML buttons
+  window.showSection = function(sectionName) {
+    document.getElementById('createGoal').classList.add('hidden')
+    document.getElementById('myGoals').classList.add('hidden')
+    document.getElementById(sectionName).classList.remove('hidden')
+    if (sectionName === 'myGoals') renderGoals()
+  }
+
+  window.addGoal = async function() {
+    let title      = document.getElementById('goalTitle').value
+    let desc       = document.getElementById('goalDesc').value
+    let thrustArea = document.getElementById('thrustArea').value
+    let uomType    = document.getElementById('uomType').value
+    let target     = document.getElementById('goalTarget').value
+    let weightage  = parseInt(document.getElementById('goalWeightage').value)
+
+    // VALIDATION
+    if (!title || !target || !weightage) {
+      showError('Please fill in all fields.')
+      return
+    }
+    if (weightage < 10) {
+      showError('Minimum weightage per goal is 10%.')
+      return
+    }
+    if (goals.length >= 8) {
+      showError('Maximum 8 goals allowed.')
+      return
     }
 
-    function renderGoals() {
-      let tbody = document.getElementById('goalsTableBody')
-      let totalWeightage = 0
-      tbody.innerHTML = '' // Clear table first
+    let currentTotal = goals.reduce((sum, g) => sum + g.weightage, 0)
+    if (currentTotal + weightage > 100) {
+      showError('Total weightage cannot exceed 100%. You have ' + (100 - currentTotal) + '% remaining.')
+      return
+    }
 
-      // Loop through goals — exactly like a for loop in C
-      goals.forEach((goal, index) => {
-        totalWeightage += goal.weightage
-        tbody.innerHTML += `
-          <tr>
-            <td class="border p-2">${goal.title}</td>
-            <td class="border p-2">${goal.thrustArea}</td>
-            <td class="border p-2">${goal.uomType}</td>
-            <td class="border p-2">${goal.target}</td>
-            <td class="border p-2">${goal.weightage}%</td>
-            <td class="border p-2">
-              <button onclick="deleteGoal(${index})" 
-                class="text-red-500 hover:underline text-sm">Remove</button>
-            </td>
-          </tr>
-        `
+    document.getElementById('errorMsg').classList.add('hidden')
+
+    // SAVE TO SUPABASE instead of just the array
+    let { data, error } = await supabase
+      .from('goals')
+      .insert({
+        employee_id: currentUser.id,
+        title:       title,
+        description: desc,
+        thrust_area: thrustArea,
+        uom_type:    uomType,
+        target:      target,
+        weightage:   weightage,
+        status:      'draft'
       })
+      .select()
+      .single()
 
-      document.getElementById('totalWeightage').innerText = totalWeightage + '%'
+    if (error) {
+      showError('Error saving goal: ' + error.message)
+      return
     }
 
-    function deleteGoal(index) {
-      goals.splice(index, 1) // Remove 1 item at position index — like array shifting in C
-      renderGoals()
+    // Add to local array and clear form
+    goals.push(data)
+
+    document.getElementById('goalTitle').value = ''
+    document.getElementById('goalDesc').value = ''
+    document.getElementById('goalTarget').value = ''
+    document.getElementById('goalWeightage').value = ''
+
+    alert('Goal saved! Add more or go to My Goals to submit.')
+  }
+
+  window.deleteGoal = async function(goalId) {
+    let { error } = await supabase
+      .from('goals')
+      .delete()
+      .eq('id', goalId)
+
+    if (error) {
+      alert('Error deleting goal: ' + error.message)
+      return
     }
 
-    function submitGoals() {
-      let total = goals.reduce((sum, g) => sum + g.weightage, 0)
+    // Remove from local array
+    goals = goals.filter(g => g.id !== goalId)
+    renderGoals()
+  }
 
-      if (goals.length === 0) {
-        alert('Add at least one goal first.')
-        return
-      }
-      if (total !== 100) {
-        alert('Total weightage must equal 100%. Currently at ' + total + '%.')
-        return
-      }
+  window.submitGoals = async function() {
+    let total = goals.reduce((sum, g) => sum + g.weightage, 0)
 
-      // For now, just show success message
-      // Later we'll save this to Supabase
-      document.getElementById('submitMsg').classList.remove('hidden')
+    if (goals.length === 0) {
+      alert('Add at least one goal first.')
+      return
+    }
+    if (total !== 100) {
+      alert('Total weightage must equal 100%. Currently at ' + total + '%.')
+      return
     }
 
-  </script>
+    // Update all goals status to submitted in database
+    let { error } = await supabase
+      .from('goals')
+      .update({ status: 'submitted' })
+      .eq('employee_id', currentUser.id)
+      .eq('status', 'draft')
+
+    if (error) {
+      alert('Error submitting goals: ' + error.message)
+      return
+    }
+
+    // Update local array
+    goals = goals.map(g => ({ ...g, status: 'submitted' }))
+
+    document.getElementById('submitMsg').classList.remove('hidden')
+    renderGoals()
+  }
+
+  function renderGoals() {
+    let tbody = document.getElementById('goalsTableBody')
+    let totalWeightage = 0
+    tbody.innerHTML = ''
+
+    goals.forEach((goal) => {
+      totalWeightage += goal.weightage
+
+      // If goal is submitted or approved, don't show delete button
+      let actionCell = goal.status === 'draft'
+        ? `<button onclick="deleteGoal('${goal.id}')" 
+             class="text-red-500 hover:underline text-sm">Remove</button>`
+        : `<span class="text-gray-400 text-sm">Locked</span>`
+
+      // Status badge color
+      let badgeColor = {
+        draft:     'bg-gray-100 text-gray-600',
+        submitted: 'bg-yellow-100 text-yellow-700',
+        approved:  'bg-green-100 text-green-700',
+        rejected:  'bg-red-100 text-red-700'
+      }[goal.status]
+
+      tbody.innerHTML += `
+        <tr>
+          <td class="border p-2">${goal.title}</td>
+          <td class="border p-2">${goal.thrust_area}</td>
+          <td class="border p-2">${goal.uom_type}</td>
+          <td class="border p-2">${goal.target}</td>
+          <td class="border p-2">${goal.weightage}%</td>
+          <td class="border p-2">
+            <span class="px-2 py-1 rounded text-sm ${badgeColor}">
+              ${goal.status}
+            </span>
+          </td>
+          <td class="border p-2">${actionCell}</td>
+        </tr>
+      `
+    })
+
+    document.getElementById('totalWeightage').innerText = totalWeightage + '%'
+  }
+
+  function showError(message) {
+    let errorMsg = document.getElementById('errorMsg')
+    errorMsg.innerText = message
+    errorMsg.classList.remove('hidden')
+  }
+
+  // Start everything
+  init()
+</script>
 
 </body>
 </html>
