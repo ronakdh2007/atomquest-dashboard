@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AtomQuest Portal</title>
+  <!-- This line gives all of Tailwind styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <div class="bg-white p-8 rounded shadow w-96">
+    <h1 class="text-2xl font-bold mb-6">Goal Portal Login</h1>
+    
+    <select id="roleSelect" class="w-full border p-2 rounded mb-4">
+      <option value="employee">Employee</option>
+      <option value="manager">Manager</option>
+      <option value="admin">Admin</option>
+    </select>
+
+    <button onclick="login()" 
+      class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+      Login
+    </button>
+  </div>
+
+  <script>
+    function login() {
+      let role = document.getElementById("roleSelect").value
+      if (role === "employee") window.location.href = "employee.html"
+      if (role === "manager") window.location.href = "manager.html"
+      if (role === "admin") window.location.href = "admin.html"
+    }
+  </script>
+
+</body>
+</html>

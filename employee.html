@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Employee Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+  <!-- TOP NAVBAR -->
+  <nav class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Goal Portal — Employee</h1>
+    <a href="index.html" class="text-sm underline">Logout</a>
+  </nav>
+
+  <div class="max-w-4xl mx-auto mt-8 px-4">
+
+    <!-- TWO BUTTONS TO SWITCH BETWEEN VIEWS -->
+    <div class="flex gap-4 mb-6">
+      <button onclick="showSection('createGoal')" 
+        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        Create New Goal
+      </button>
+      <button onclick="showSection('myGoals')" 
+        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+        My Goals
+      </button>
+    </div>
+
+    <!-- SECTION 1: CREATE GOAL FORM -->
+    <div id="createGoal" class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-bold mb-4">Create New Goal</h2>
+
+      <div class="flex flex-col gap-4">
+
+        <div>
+          <label class="font-semibold">Goal Title</label>
+          <input id="goalTitle" type="text" placeholder="Enter goal title"
+            class="w-full border p-2 rounded mt-1">
+        </div>
+
+        <div>
+          <label class="font-semibold">Description</label>
+          <textarea id="goalDesc" placeholder="Describe your goal"
+            class="w-full border p-2 rounded mt-1 h-24"></textarea>
+        </div>
+
+        <div>
+          <label class="font-semibold">Thrust Area</label>
+          <select id="thrustArea" class="w-full border p-2 rounded mt-1">
+            <option>Sales</option>
+            <option>Operations</option>
+            <option>Finance</option>
+            <option>HR</option>
+            <option>Technology</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="font-semibold">Unit of Measurement (UoM)</label>
+          <select id="uomType" class="w-full border p-2 rounded mt-1">
+            <option value="min">Numeric (Higher is better)</option>
+            <option value="max">Numeric (Lower is better)</option>
+            <option value="timeline">Timeline</option>
+            <option value="zero">Zero-based</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="font-semibold">Target</label>
+          <input id="goalTarget" type="text" placeholder="e.g. 100000 or 2024-12-31"
+            class="w-full border p-2 rounded mt-1">
+        </div>
+
+        <div>
+          <label class="font-semibold">Weightage (%)</label>
+          <input id="goalWeightage" type="number" placeholder="e.g. 20"
+            class="w-full border p-2 rounded mt-1">
+        </div>
+
+        <!-- ERROR MESSAGE (hidden by default) -->
+        <p id="errorMsg" class="text-red-500 hidden"></p>
+
+        <button onclick="addGoal()"
+          class="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 font-semibold">
+          Add Goal
+        </button>
+
+      </div>
+    </div>
+
+    <!-- SECTION 2: MY GOALS LIST -->
+    <div id="myGoals" class="bg-white p-6 rounded shadow hidden">
+      <h2 class="text-xl font-bold mb-4">My Goals</h2>
+      
+      <!-- WEIGHTAGE TOTAL -->
+      <p class="mb-4">Total Weightage: 
+        <span id="totalWeightage" class="font-bold text-blue-600">0%</span>
+        <span class="text-gray-400 text-sm"> (must equal 100% to submit)</span>
+      </p>
+
+      <!-- GOALS TABLE -->
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="border p-2 text-left">Title</th>
+            <th class="border p-2 text-left">Thrust Area</th>
+            <th class="border p-2 text-left">UoM</th>
+            <th class="border p-2 text-left">Target</th>
+            <th class="border p-2 text-left">Weightage</th>
+            <th class="border p-2 text-left">Action</th>
+          </tr>
+        </thead>
+        <tbody id="goalsTableBody">
+          <!-- Goals will appear here -->
+        </tbody>
+      </table>
+
+      <button onclick="submitGoals()"
+        class="mt-4 bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 font-semibold">
+        Submit Goals for Approval
+      </button>
+
+      <p id="submitMsg" class="mt-2 text-green-600 hidden font-semibold">
+        Goals submitted successfully!
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    // This array stores all goals the employee adds — like an array of structs in C
+    let goals = []
+
+    // Shows one section and hides the other — like switching screens
+    function showSection(sectionName) {
+      document.getElementById('createGoal').classList.add('hidden')
+      document.getElementById('myGoals').classList.add('hidden')
+      document.getElementById(sectionName).classList.remove('hidden')
+
+      // Refresh the table every time My Goals is opened
+      if (sectionName === 'myGoals') renderGoals()
+    }
+
+    function addGoal() {
+      // Read all form values — like scanf in C
+      let title      = document.getElementById('goalTitle').value
+      let desc       = document.getElementById('goalDesc').value
+      let thrustArea = document.getElementById('thrustArea').value
+      let uomType    = document.getElementById('uomType').value
+      let target     = document.getElementById('goalTarget').value
+      let weightage  = parseInt(document.getElementById('goalWeightage').value)
+
+      let errorMsg = document.getElementById('errorMsg')
+
+      // VALIDATION RULES from the problem statement
+      if (!title || !target || !weightage) {
+        showError('Please fill in all fields.')
+        return
+      }
+      if (!weightage || weightage < 10 || !Number.isInteger(weightage)) {
+        showError('Weightage must be a whole number of at least 10%.')
+        return
+      }
+      if (goals.length >= 8) {
+        showError('Maximum 8 goals allowed.')
+        return
+      }
+
+      // Check total weightage won't exceed 100
+      let currentTotal = goals.reduce((sum, g) => sum + g.weightage, 0)
+      if (currentTotal + weightage > 100) {
+        showError('Total weightage cannot exceed 100%. You have ' + (100 - currentTotal) + '% remaining.')
+        return
+      }
+
+      // Hide error if everything is fine
+      errorMsg.classList.add('hidden')
+
+      // Add goal to our array — like adding to a struct array in C
+      goals.push({ title, desc, thrustArea, uomType, target, weightage })
+
+      // Clear the form
+      document.getElementById('goalTitle').value = ''
+      document.getElementById('goalDesc').value = ''
+      document.getElementById('goalTarget').value = ''
+      document.getElementById('goalWeightage').value = ''
+
+      alert('Goal added! Add more or go to My Goals to submit.')
+    }
+
+    function showError(message) {
+      let errorMsg = document.getElementById('errorMsg')
+      errorMsg.innerText = message
+      errorMsg.classList.remove('hidden')
+    }
+
+    function renderGoals() {
+      let tbody = document.getElementById('goalsTableBody')
+      let totalWeightage = 0
+      tbody.innerHTML = '' // Clear table first
+
+      // Loop through goals — exactly like a for loop in C
+      goals.forEach((goal, index) => {
+        totalWeightage += goal.weightage
+        tbody.innerHTML += `
+          <tr>
+            <td class="border p-2">${goal.title}</td>
+            <td class="border p-2">${goal.thrustArea}</td>
+            <td class="border p-2">${goal.uomType}</td>
+            <td class="border p-2">${goal.target}</td>
+            <td class="border p-2">${goal.weightage}%</td>
+            <td class="border p-2">
+              <button onclick="deleteGoal(${index})" 
+                class="text-red-500 hover:underline text-sm">Remove</button>
+            </td>
+          </tr>
+        `
+      })
+
+      document.getElementById('totalWeightage').innerText = totalWeightage + '%'
+    }
+
+    function deleteGoal(index) {
+      goals.splice(index, 1) // Remove 1 item at position index — like array shifting in C
+      renderGoals()
+    }
+
+    function submitGoals() {
+      let total = goals.reduce((sum, g) => sum + g.weightage, 0)
+
+      if (goals.length === 0) {
+        alert('Add at least one goal first.')
+        return
+      }
+      if (total !== 100) {
+        alert('Total weightage must equal 100%. Currently at ' + total + '%.')
+        return
+      }
+
+      // For now, just show success message
+      // Later we'll save this to Supabase
+      document.getElementById('submitMsg').classList.remove('hidden')
+    }
+
+  </script>
+
+</body>
+</html>

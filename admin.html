@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+  <!-- TOP NAVBAR -->
+  <nav class="bg-purple-600 text-white px-6 py-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Goal Portal — Admin</h1>
+    <a href="index.html" class="text-sm underline">Logout</a>
+  </nav>
+
+  <div class="max-w-5xl mx-auto mt-8 px-4">
+
+    <!-- SECTION SWITCH BUTTONS -->
+    <div class="flex gap-4 mb-6">
+      <button onclick="showSection('overview')"
+        class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+        Overview
+      </button>
+      <button onclick="showSection('unlockGoals')"
+        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+        Unlock Goals
+      </button>
+      <button onclick="showSection('auditLog')"
+        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+        Audit Log
+      </button>
+      <button onclick="showSection('exportReport')"
+        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+        Export Report
+      </button>
+    </div>
+
+    <!-- SECTION 1: OVERVIEW DASHBOARD -->
+    <div id="overview" class="space-y-6">
+
+      <!-- SUMMARY CARDS -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-white p-6 rounded shadow text-center">
+          <p class="text-gray-500 text-sm">Total Employees</p>
+          <p class="text-3xl font-bold text-purple-600 mt-1">24</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow text-center">
+          <p class="text-gray-500 text-sm">Goals Submitted</p>
+          <p class="text-3xl font-bold text-blue-600 mt-1">18</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow text-center">
+          <p class="text-gray-500 text-sm">Pending Approval</p>
+          <p class="text-3xl font-bold text-yellow-500 mt-1">6</p>
+        </div>
+      </div>
+
+      <!-- COMPLETION STATUS TABLE -->
+      <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-bold mb-4">Check-in Completion Status</h2>
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="border p-2 text-left">Employee</th>
+              <th class="border p-2 text-left">Manager</th>
+              <th class="border p-2 text-left">Q1</th>
+              <th class="border p-2 text-left">Q2</th>
+              <th class="border p-2 text-left">Q3</th>
+              <th class="border p-2 text-left">Q4</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border p-2">John Doe</td>
+              <td class="border p-2">Amit Shah</td>
+              <td class="border p-2">
+                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Done</span>
+              </td>
+              <td class="border p-2">
+                <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">Pending</span>
+              </td>
+              <td class="border p-2">
+                <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">Not Open</span>
+              </td>
+              <td class="border p-2">
+                <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">Not Open</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="border p-2">Jane Smith</td>
+              <td class="border p-2">Amit Shah</td>
+              <td class="border p-2">
+                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Done</span>
+              </td>
+              <td class="border p-2">
+                <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">Pending</span>
+              </td>
+              <td class="border p-2">
+                <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">Not Open</span>
+              </td>
+              <td class="border p-2">
+                <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">Not Open</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION 2: UNLOCK GOALS -->
+    <div id="unlockGoals" class="bg-white p-6 rounded shadow hidden">
+      <h2 class="text-xl font-bold mb-2">Unlock Goals</h2>
+      <p class="text-gray-500 text-sm mb-4">
+        Goals are locked after manager approval. Use this to unlock for edits.
+      </p>
+
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="border p-2 text-left">Employee</th>
+            <th class="border p-2 text-left">Goal</th>
+            <th class="border p-2 text-left">Approved On</th>
+            <th class="border p-2 text-left">Status</th>
+            <th class="border p-2 text-left">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border p-2">John Doe</td>
+            <td class="border p-2">Achieve Sales Target</td>
+            <td class="border p-2">May 10, 2025</td>
+            <td class="border p-2">
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Locked</span>
+            </td>
+            <td class="border p-2">
+              <button onclick="unlockGoal(this)"
+                class="bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600">
+                Unlock
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td class="border p-2">Jane Smith</td>
+            <td class="border p-2">Reduce TAT</td>
+            <td class="border p-2">May 11, 2025</td>
+            <td class="border p-2">
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Locked</span>
+            </td>
+            <td class="border p-2">
+              <button onclick="unlockGoal(this)"
+                class="bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600">
+                Unlock
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 3: AUDIT LOG -->
+    <div id="auditLog" class="bg-white p-6 rounded shadow hidden">
+      <h2 class="text-xl font-bold mb-4">Audit Log</h2>
+      <p class="text-gray-500 text-sm mb-4">
+        All changes made to goals after the lock date are recorded here.
+      </p>
+
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="border p-2 text-left">Time</th>
+            <th class="border p-2 text-left">Changed By</th>
+            <th class="border p-2 text-left">Employee</th>
+            <th class="border p-2 text-left">Change</th>
+          </tr>
+        </thead>
+        <tbody id="auditTableBody">
+          <!-- Audit entries will appear here when unlock is used -->
+          <tr>
+            <td class="border p-2 text-gray-400 text-sm" colspan="4">
+              No changes recorded yet.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 4: EXPORT REPORT -->
+    <div id="exportReport" class="bg-white p-6 rounded shadow hidden">
+      <h2 class="text-xl font-bold mb-2">Export Achievement Report</h2>
+      <p class="text-gray-500 text-sm mb-6">
+        Download a CSV of all employees' planned targets vs actual achievements.
+      </p>
+
+      <button onclick="exportCSV()"
+        class="bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600 font-semibold">
+        Download CSV Report
+      </button>
+
+      <p class="text-gray-400 text-sm mt-3">
+        Includes: Employee, Goal, UoM, Target, Actual, Score, Status
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    function showSection(sectionName) {
+      // Hide all sections
+      document.getElementById('overview').classList.add('hidden')
+      document.getElementById('unlockGoals').classList.add('hidden')
+      document.getElementById('auditLog').classList.add('hidden')
+      document.getElementById('exportReport').classList.add('hidden')
+      // Show selected section
+      document.getElementById(sectionName).classList.remove('hidden')
+    }
+
+    function unlockGoal(button) {
+      // Change the button to show it's unlocked
+      button.innerText = 'Unlocked'
+      button.classList.remove('bg-orange-500', 'hover:bg-orange-600')
+      button.classList.add('bg-gray-300', 'text-gray-600')
+      button.disabled = true
+
+      // Update the status cell next to it
+      let row = button.closest('tr')
+      let statusCell = row.cells[3]
+      statusCell.innerHTML = `
+        <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-sm">
+          Unlocked
+        </span>`
+
+      // Add entry to audit log
+      let now = new Date().toLocaleString()
+      let employeeName = row.cells[0].innerText
+      let goalName = row.cells[1].innerText
+
+      let auditBody = document.getElementById('auditTableBody')
+
+      // Remove the "no changes" placeholder if it exists
+      if (auditBody.rows[0].cells[0].colSpan === 4) {
+        auditBody.innerHTML = ''
+      }
+
+      auditBody.innerHTML += `
+        <tr>
+          <td class="border p-2 text-sm">${now}</td>
+          <td class="border p-2 text-sm">Admin</td>
+          <td class="border p-2 text-sm">${employeeName}</td>
+          <td class="border p-2 text-sm">Goal unlocked: "${goalName}"</td>
+        </tr>`
+    }
+
+    function exportCSV() {
+      // Sample data — later this will come from Supabase
+      let csvContent = "Employee,Goal,UoM,Target,Actual,Score,Status\n"
+      csvContent += "John Doe,Achieve Sales Target,Min,500000,420000,84%,On Track\n"
+      csvContent += "John Doe,Zero Complaints,Zero,0,0,100%,Completed\n"
+      csvContent += "Jane Smith,Reduce TAT,Max,2,1.5,133%,On Track\n"
+
+      // Create a download link and click it automatically
+      let blob = new Blob([csvContent], { type: 'text/csv' })
+      let url = URL.createObjectURL(blob)
+      let a = document.createElement('a')
+      a.href = url
+      a.download = 'achievement_report.csv'
+      a.click()
+    }
+  </script>
+
+</body>
+</html>
