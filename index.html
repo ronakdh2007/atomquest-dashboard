@@ -2,32 +2,73 @@
 <html>
 <head>
   <title>AtomQuest Portal</title>
-  <!-- This line gives all of Tailwind styling -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
 
   <div class="bg-white p-8 rounded shadow w-96">
-    <h1 class="text-2xl font-bold mb-6">Goal Portal Login</h1>
-    
-    <select id="roleSelect" class="w-full border p-2 rounded mb-4">
-      <option value="employee">Employee</option>
-      <option value="manager">Manager</option>
-      <option value="admin">Admin</option>
-    </select>
+    <h1 class="text-2xl font-bold mb-2">Goal Portal</h1>
+    <p class="text-gray-400 text-sm mb-6">Atomberg — AtomQuest Hackathon</p>
 
-    <button onclick="login()" 
-      class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-      Login
-    </button>
+    <div class="flex flex-col gap-4">
+
+      <div>
+        <label class="font-semibold text-sm">Email</label>
+        <input id="emailInput" type="email" placeholder="Enter your email"
+          class="w-full border p-2 rounded mt-1">
+      </div>
+
+      <p id="errorMsg" class="text-red-500 text-sm hidden"></p>
+
+      <button onclick="login()"
+        class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 font-semibold">
+        Login
+      </button>
+
+      <div class="border-t pt-3 text-xs text-gray-400">
+        <p class="font-semibold mb-1">Demo accounts:</p>
+        <p>admin@atomberg.com — Admin</p>
+        <p>amit@atomberg.com — Manager</p>
+        <p>john@atomberg.com — Employee</p>
+        <p>jane@atomberg.com — Employee</p>
+      </div>
+
+    </div>
   </div>
 
-  <script>
-    function login() {
-      let role = document.getElementById("roleSelect").value
-      if (role === "employee") window.location.href = "employee.html"
-      if (role === "manager") window.location.href = "manager.html"
-      if (role === "admin") window.location.href = "admin.html"
+  <script type="module">
+    import { supabase } from './JS/supabase.js'
+
+    window.login = async function() {
+      let email = document.getElementById('emailInput').value.trim()
+      let errorMsg = document.getElementById('errorMsg')
+
+      if (!email) {
+        errorMsg.innerText = 'Please enter your email.'
+        errorMsg.classList.remove('hidden')
+        return
+      }
+
+      // Look up user in database by email
+      let { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single()
+
+      if (error || !data) {
+        errorMsg.innerText = 'Email not found. Please check and try again.'
+        errorMsg.classList.remove('hidden')
+        return
+      }
+
+      // Save user to localStorage so other pages know who is logged in
+      localStorage.setItem('currentUser', JSON.stringify(data))
+
+      // Redirect based on role
+      if (data.role === 'employee') window.location.href = 'employee.html'
+      if (data.role === 'manager')  window.location.href = 'manager.html'
+      if (data.role === 'admin')    window.location.href = 'admin.html'
     }
   </script>
 

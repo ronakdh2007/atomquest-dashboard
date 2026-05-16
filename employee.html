@@ -139,21 +139,24 @@
 
   // When page loads, get the current user from database
   async function init() {
-    let { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', 'john@atomberg.com')
-      .single()
+    // Get user from localStorage instead of hardcoding
+    let stored = localStorage.getItem('currentUser')
 
-    if (error) {
-      alert('Error loading user: ' + error.message)
+    if (!stored) {
+      // If no user logged in, send back to login
+      window.location.href = 'index.html'
       return
     }
 
-    currentUser = data
-    document.getElementById('employeeName').innerText = data.name
+    currentUser = JSON.parse(stored)
+    document.getElementById('employeeName').innerText = currentUser.name
 
-    // Load existing goals from database
+    // If wrong role somehow got here, redirect
+    if (currentUser.role !== 'employee') {
+      window.location.href = 'index.html'
+      return
+    }
+
     loadGoals()
   }
 
