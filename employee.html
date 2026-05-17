@@ -24,6 +24,10 @@
         class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
         My Goals
       </button>
+      <button onclick="showSection('checkins')" 
+        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+        My Check-ins
+      </button>
     </div>
 
     <!-- SECTION 1: CREATE GOAL FORM -->
@@ -125,6 +129,14 @@
         Goals submitted successfully!
       </p>
     </div>
+    <!-- SECTION 3: EMPLOYEE CHECK-INS -->
+    <div id="checkins" class="bg-white p-6 rounded shadow hidden">
+      <h2 class="text-xl font-bold mb-4">My Quarterly Check-ins</h2>
+      <p class="text-gray-500 text-sm mb-4">
+        Log your actual achievement against each approved goal.
+      </p>
+      <div id="checkinGoalsList"></div>
+    </div>
 
   </div>
 
@@ -182,6 +194,7 @@
     document.getElementById('myGoals').classList.add('hidden')
     document.getElementById(sectionName).classList.remove('hidden')
     if (sectionName === 'myGoals') renderGoals()
+        if (sectionName === 'checkins') loadCheckins()
   }
 
   window.addGoal = async function() {
@@ -339,6 +352,98 @@
     let errorMsg = document.getElementById('errorMsg')
     errorMsg.innerText = message
     errorMsg.classList.remove('hidden')
+  }
+
+  async function loadCheckins() {
+    let { data: goals, error } = await supabase
+      .from('goals')
+      .select('*')
+      .eq('employee_id', currentUser.id)
+      .eq('status', 'approved')
+
+    let container = document.getElementById('checkinGoalsList')
+
+    if (error || !goals || goals.length === 0) {
+      container.innerHTML = '<p class="text-gray-400">No approved goals yet. Goals must be approved by your manager before check-ins.</p>'
+      return
+    }
+
+    // Get existing checkins for these goals
+    let goalIds = goals.map(g => g.id)
+    let { data: checkins } = await supabase
+      .from('checkins')
+      .select('*')
+      .in('goal_id', goalIds)
+
+    container.innerHTML = ''
+
+    goals.forEach(goal => {
+      let checkin = checkins ? checkins.find(c => c.goal_id === goal.id) : null
+
+      container.innerHTML += `
+        <div class="border rounded p-4 mb-4">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold">${goal.title}</h3>
+            <span class="text-sm text-gray-500">Target: ${goal.target}</span>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <div>
+              <label class="font-semibold text-sm">Actual Achievement</label>
+              <input id="actual_${goal.id}" type="text" 
+                value="${checkin ? checkin.actual_achievement || '' : ''}"
+                placeholder="Enter your actual achievement"
+                class="w-full border p-2 rounded mt-1">
+            </div>
+
+            <div>
+              <label class="font-semibold text-sm">Status</label>
+              <select id="status_${goal.id}" class="w-full border p-2 rounded mt-1">
+                <option value="not_started" ${!checkin || checkin.status === 'not_started' ? 'selected' : ''}>Not Started</option>
+                <option value="on_track" ${checkin && checkin.status === 'on_track' ? 'selected' : ''}>On Track</option>
+                <option value="completed" ${checkin && checkin.status === 'completed' ? 'selected' : ''}>Completed</option>
+              </select>
+            </div>
+
+            <button onclick="saveActual('${goal.id}')"
+              class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm font-semibold">
+              Save Progress
+            </button>
+
+            <p id="saved_${goal.id}" class="text-green-600 text-sm font-semibold hidden">
+              Progress saved!
+            </p>
+          </div>
+        </div>
+      `
+    })
+  }
+
+  window.saveActual = async function(goalId) {
+    let actual = document.getElementById('actual_' + goalId).value
+    let status = document.getElementById('status_' + goalId).value
+
+    if (!actual) {
+      alert('Please enter your actual achievement.')
+      return
+    }
+
+    let { error } = await supabase
+      .from('checkins')
+      .upsert({
+        goal_id:            goalId,
+        quarter:            'Q1',
+        actual_achievement: actual,
+        status:             status,
+        updated_at:         new Date().toISOString()
+      }, { onConflict: 'goal_id,quarter' })
+
+    if (error) {
+      alert('Error saving progress: ' + error.message)
+      return
+    }
+
+    document.getElementById('saved_' + goalId).classList.remove('hidden')
   }
 
   // Start everything
