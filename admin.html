@@ -3,6 +3,7 @@
 <head>
   <title>Admin Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100">
 
@@ -41,6 +42,10 @@
       <button onclick="showSection('cycleManagement')" id="btn_cycleManagement"
         class="section-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50">
         Cycle Management
+      </button>
+      <button onclick="showSection('analytics')" id="btn_analytics"
+        class="section-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50">
+        Analytics
       </button>
     </div>
 
@@ -148,6 +153,32 @@
         Control which periods are open for goal setting and check-ins.
       </p>
       <div id="cyclesList"></div>
+    </div>
+        <!-- SECTION 6: ANALYTICS -->
+    <div id="analytics" class="space-y-6 hidden">
+
+      <div class="grid grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded shadow">
+          <h2 class="text-lg font-bold mb-4">Q1 Achievement Scores</h2>
+          <canvas id="achievementChart"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+          <h2 class="text-lg font-bold mb-4">Goal Status Distribution</h2>
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded shadow">
+          <h2 class="text-lg font-bold mb-4">Goals by Thrust Area</h2>
+          <canvas id="thrustChart"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+          <h2 class="text-lg font-bold mb-4">Goals by UoM Type</h2>
+          <canvas id="uomChart"></canvas>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -424,6 +455,7 @@
     document.getElementById('exportReport').classList.add('hidden')
     document.getElementById('cycleManagement').classList.add('hidden')
     document.getElementById(sectionName).classList.remove('hidden')
+    document.getElementById('analytics').classList.add('hidden')
 
     document.querySelectorAll('.section-btn').forEach(btn => {
       btn.className = 'section-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50'
@@ -435,10 +467,134 @@
     if (sectionName === 'unlockGoals')      loadUnlockGoals()
     if (sectionName === 'auditLog')         loadAuditLog()
     if (sectionName === 'cycleManagement')  loadCycles()
+    if (sectionName === 'analytics')        loadAnalytics()
   }
 
   window.exportCSV = exportCSV
 
+  async function loadAnalytics() {
+    let { data: goals } = await supabase
+      .from('goals')
+      .select('*, users(name)')
+
+    let { data: checkins } = await supabase
+      .from('checkins')
+      .select('*')
+
+    if (!goals || goals.length === 0) return
+
+    // Destroy existing charts if any to prevent duplicates
+    ['achievementChart', 'statusChart', 'thrustChart', 'uomChart'].forEach(id => {
+      let existing = Chart.getChart(id)
+      if (existing) existing.destroy()
+    })
+
+    // CHART 1: Achievement Scores per employee
+    let employeeScores = {}
+    goals.forEach(goal => {
+      let name = goal.users ? goal.users.name : 'Unknown'
+      let checkin = checkins ? checkins.find(c => c.goal_id === goal.id) : null
+      if (!employeeScores[name]) employeeScores[name] = []
+
+      if (checkin && checkin.actual_achievement) {
+        let t = parseFloat(goal.target)
+        let a = parseFloat(checkin.actual_achievement)
+        if (!isNaN(t) && !isNaN(a) && t > 0) {
+          let score = goal.uom_type === 'min' ? (a/t)*100 :
+                      goal.uom_type === 'max' ? (t/a)*100 :
+                      goal.uom_type === 'zero' ? (a === 0 ? 100 : 0) : 0
+          employeeScores[name].push(score)
+        }
+      }
+    })
+
+    let empNames = Object.keys(employeeScores)
+    let empAvgScores = empNames.map(name => {
+      let scores = employeeScores[name]
+      return scores.length > 0
+        ? Math.round(scores.reduce((a,b) => a+b, 0) / scores.length)
+        : 0
+    })
+
+    new Chart(document.getElementById('achievementChart'), {
+      type: 'bar',
+      data: {
+        labels: empNames,
+        datasets: [{
+          label: 'Avg Achievement Score (%)',
+          data: empAvgScores,
+          backgroundColor: '#FDBD13',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true, max: 100 } },
+        plugins: { legend: { display: false } }
+      }
+    })
+
+    // CHART 2: Goal Status Distribution
+    let statusCounts = { draft: 0, submitted: 0, approved: 0, rejected: 0 }
+    goals.forEach(g => { if (statusCounts[g.status] !== undefined) statusCounts[g.status]++ })
+
+    new Chart(document.getElementById('statusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Draft', 'Submitted', 'Approved', 'Rejected'],
+        datasets: [{
+          data: Object.values(statusCounts),
+          backgroundColor: ['#e5e7eb', '#FDBD13', '#22c55e', '#ef4444'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom' } }
+      }
+    })
+
+    // CHART 3: Goals by Thrust Area
+    let thrustCounts = {}
+    goals.forEach(g => {
+      thrustCounts[g.thrust_area] = (thrustCounts[g.thrust_area] || 0) + 1
+    })
+
+    new Chart(document.getElementById('thrustChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(thrustCounts),
+        datasets: [{
+          label: 'Number of Goals',
+          data: Object.values(thrustCounts),
+          backgroundColor: '#FDBD13',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } },
+        plugins: { legend: { display: false } }
+      }
+    })
+
+    // CHART 4: Goals by UoM Type
+    let uomCounts = { min: 0, max: 0, timeline: 0, zero: 0 }
+    goals.forEach(g => { if (uomCounts[g.uom_type] !== undefined) uomCounts[g.uom_type]++ })
+
+    new Chart(document.getElementById('uomChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Higher is Better', 'Lower is Better', 'Timeline', 'Zero-based'],
+        datasets: [{
+          data: Object.values(uomCounts),
+          backgroundColor: ['#FDBD13', '#1e293b', '#94a3b8', '#e5e7eb'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom' } }
+      }
+    })
+  }
+  
   init()
   </script>
 
