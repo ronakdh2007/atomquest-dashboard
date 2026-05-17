@@ -281,7 +281,7 @@
     logs.forEach(log => {
       tbody.innerHTML += `
         <tr>
-          <td class="border p-2 text-sm">${new Date(log.changed_at).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</td>
+          <td class="border p-2 text-sm">${new Date(new Date(log.changed_at).getTime() + (5.5 * 60 * 60 * 1000)).toLocaleString('en-IN')}</td>
           <td class="border p-2 text-sm">${log.users ? log.users.name : 'Unknown'}</td>
           <td class="border p-2 text-sm">N/A</td>
           <td class="border p-2 text-sm">${log.change_description}</td>
