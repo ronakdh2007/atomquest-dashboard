@@ -292,7 +292,7 @@
       .from('goals')
       .update({ status: 'submitted' })
       .eq('employee_id', currentUser.id)
-      .eq('status', 'draft')
+      .in('status', ['draft', 'rejected'])
 
     if (error) {
       alert('Error submitting goals: ' + error.message)
