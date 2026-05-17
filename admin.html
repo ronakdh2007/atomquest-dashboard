@@ -133,16 +133,16 @@
         Includes: Employee, Goal, UoM, Target, Actual, Score, Status
       </p>
 
-      <!-- SECTION 5: CYCLE MANAGEMENT -->
-      <div id="cycleManagement" class="bg-white p-6 rounded shadow hidden">
-        <h2 class="text-xl font-bold mb-2">Cycle Management</h2>
-        <p class="text-gray-500 text-sm mb-4">
-          Control which periods are open for goal setting and check-ins.
-        </p>
-        <div id="cyclesList"></div>
-      </div>
+      
     </div>
-
+    <!-- SECTION 5: CYCLE MANAGEMENT -->
+    <div id="cycleManagement" class="bg-white p-6 rounded shadow hidden">
+      <h2 class="text-xl font-bold mb-2">Cycle Management</h2>
+      <p class="text-gray-500 text-sm mb-4">
+        Control which periods are open for goal setting and check-ins.
+      </p>
+      <div id="cyclesList"></div>
+    </div>
   </div>
 
   <script type="module">
@@ -281,8 +281,9 @@
     logs.forEach(log => {
       tbody.innerHTML += `
         <tr>
-          <td class="border p-2 text-sm">${new Date(log.changed_at).toLocaleString()}</td>
+          <td class="border p-2 text-sm">${new Date(log.changed_at).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</td>
           <td class="border p-2 text-sm">${log.users ? log.users.name : 'Unknown'}</td>
+          <td class="border p-2 text-sm">N/A</td>
           <td class="border p-2 text-sm">${log.change_description}</td>
         </tr>
       `
