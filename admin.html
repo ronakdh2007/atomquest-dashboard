@@ -481,7 +481,6 @@
       .from('checkins')
       .select('*')
 
-    console.log('goals loaded:', goals)
     if (!goals || goals.length === 0) return
 
     // Destroy existing charts if any to prevent duplicates
