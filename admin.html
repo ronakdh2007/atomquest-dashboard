@@ -8,7 +8,7 @@
 
   <!-- TOP NAVBAR -->
   <nav class="bg-purple-600 text-white px-6 py-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">Goal Portal — Admin</h1>
+    <h1 class="text-xl font-bold">Goal Portal — <span id="adminName"></span></h1>
     <a href="index.html" class="text-sm underline">Logout</a>
   </nav>
 
@@ -32,6 +32,10 @@
         class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
         Export Report
       </button>
+      <button onclick="showSection('cycleManagement')"
+        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+        Cycle Management
+      </button>
     </div>
 
     <!-- SECTION 1: OVERVIEW DASHBOARD -->
@@ -41,15 +45,15 @@
       <div class="grid grid-cols-3 gap-4">
         <div class="bg-white p-6 rounded shadow text-center">
           <p class="text-gray-500 text-sm">Total Employees</p>
-          <p class="text-3xl font-bold text-purple-600 mt-1">24</p>
+          <p class="text-3xl font-bold text-purple-600 mt-1" id="totalEmployees">...</p>
         </div>
         <div class="bg-white p-6 rounded shadow text-center">
           <p class="text-gray-500 text-sm">Goals Submitted</p>
-          <p class="text-3xl font-bold text-blue-600 mt-1">18</p>
+          <p class="text-3xl font-bold text-blue-600 mt-1" id="goalsSubmitted">...</p>
         </div>
         <div class="bg-white p-6 rounded shadow text-center">
           <p class="text-gray-500 text-sm">Pending Approval</p>
-          <p class="text-3xl font-bold text-yellow-500 mt-1">6</p>
+          <p class="text-3xl font-bold text-yellow-500 mt-1" id="pendingApproval">...</p>
         </div>
       </div>
 
@@ -67,40 +71,7 @@
               <th class="border p-2 text-left">Q4</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td class="border p-2">John Doe</td>
-              <td class="border p-2">Amit Shah</td>
-              <td class="border p-2">
-                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Done</span>
-              </td>
-              <td class="border p-2">
-                <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">Pending</span>
-              </td>
-              <td class="border p-2">
-                <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">Not Open</span>
-              </td>
-              <td class="border p-2">
-                <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">Not Open</span>
-              </td>
-            </tr>
-            <tr>
-              <td class="border p-2">Jane Smith</td>
-              <td class="border p-2">Amit Shah</td>
-              <td class="border p-2">
-                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Done</span>
-              </td>
-              <td class="border p-2">
-                <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">Pending</span>
-              </td>
-              <td class="border p-2">
-                <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">Not Open</span>
-              </td>
-              <td class="border p-2">
-                <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">Not Open</span>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="completionTableBody"></tbody>
         </table>
       </div>
     </div>
@@ -122,36 +93,7 @@
             <th class="border p-2 text-left">Action</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td class="border p-2">John Doe</td>
-            <td class="border p-2">Achieve Sales Target</td>
-            <td class="border p-2">May 10, 2025</td>
-            <td class="border p-2">
-              <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Locked</span>
-            </td>
-            <td class="border p-2">
-              <button onclick="unlockGoal(this)"
-                class="bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600">
-                Unlock
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <td class="border p-2">Jane Smith</td>
-            <td class="border p-2">Reduce TAT</td>
-            <td class="border p-2">May 11, 2025</td>
-            <td class="border p-2">
-              <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Locked</span>
-            </td>
-            <td class="border p-2">
-              <button onclick="unlockGoal(this)"
-                class="bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600">
-                Unlock
-              </button>
-            </td>
-          </tr>
-        </tbody>
+        <tbody id="unlockTableBody"></tbody>
       </table>
     </div>
 
@@ -171,14 +113,7 @@
             <th class="border p-2 text-left">Change</th>
           </tr>
         </thead>
-        <tbody id="auditTableBody">
-          <!-- Audit entries will appear here when unlock is used -->
-          <tr>
-            <td class="border p-2 text-gray-400 text-sm" colspan="4">
-              No changes recorded yet.
-            </td>
-          </tr>
-        </tbody>
+        <tbody id="auditTableBody"></tbody>
       </table>
     </div>
 
@@ -197,72 +132,301 @@
       <p class="text-gray-400 text-sm mt-3">
         Includes: Employee, Goal, UoM, Target, Actual, Score, Status
       </p>
+
+      <!-- SECTION 5: CYCLE MANAGEMENT -->
+      <div id="cycleManagement" class="bg-white p-6 rounded shadow hidden">
+        <h2 class="text-xl font-bold mb-2">Cycle Management</h2>
+        <p class="text-gray-500 text-sm mb-4">
+          Control which periods are open for goal setting and check-ins.
+        </p>
+        <div id="cyclesList"></div>
+      </div>
     </div>
 
   </div>
 
-  <script>
-    function showSection(sectionName) {
-      // Hide all sections
-      document.getElementById('overview').classList.add('hidden')
-      document.getElementById('unlockGoals').classList.add('hidden')
-      document.getElementById('auditLog').classList.add('hidden')
-      document.getElementById('exportReport').classList.add('hidden')
-      // Show selected section
-      document.getElementById(sectionName).classList.remove('hidden')
+  <script type="module">
+  import { supabase } from './JS/supabase.js'
+
+  let currentUser = null
+
+  async function init() {
+    let stored = localStorage.getItem('currentUser')
+
+    if (!stored) {
+      window.location.href = 'index.html'
+      return
     }
 
-    function unlockGoal(button) {
-      // Change the button to show it's unlocked
-      button.innerText = 'Unlocked'
-      button.classList.remove('bg-orange-500', 'hover:bg-orange-600')
-      button.classList.add('bg-gray-300', 'text-gray-600')
-      button.disabled = true
+    currentUser = JSON.parse(stored)
+    document.getElementById('adminName').innerText = currentUser.name
 
-      // Update the status cell next to it
-      let row = button.closest('tr')
-      let statusCell = row.cells[3]
-      statusCell.innerHTML = `
-        <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-sm">
-          Unlocked
-        </span>`
+    if (currentUser.role !== 'admin') {
+      window.location.href = 'index.html'
+      return
+    }
 
-      // Add entry to audit log
-      let now = new Date().toLocaleString()
-      let employeeName = row.cells[0].innerText
-      let goalName = row.cells[1].innerText
+    loadOverview()
+  }
 
-      let auditBody = document.getElementById('auditTableBody')
+  async function loadOverview() {
+    // Get counts for summary cards
+    let { data: users }   = await supabase.from('users').select('*').eq('role', 'employee')
+    let { data: submitted } = await supabase.from('goals').select('*').eq('status', 'submitted')
+    let { data: approved }  = await supabase.from('goals').select('*').eq('status', 'approved')
 
-      // Remove the "no changes" placeholder if it exists
-      if (auditBody.rows[0].cells[0].colSpan === 4) {
-        auditBody.innerHTML = ''
+    document.getElementById('totalEmployees').innerText = users ? users.length : 0
+    document.getElementById('goalsSubmitted').innerText = submitted ? submitted.length : 0
+    document.getElementById('pendingApproval').innerText = submitted ? submitted.length : 0
+
+    // Load completion status table
+    let { data: allUsers } = await supabase.from('users').select('*').eq('role', 'employee')
+    let { data: managers } = await supabase.from('users').select('*').eq('role', 'manager')
+    let { data: checkins } = await supabase.from('checkins').select('*')
+
+    let tbody = document.getElementById('completionTableBody')
+    tbody.innerHTML = ''
+
+    if (!allUsers || allUsers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="border p-2 text-gray-400">No employees found.</td></tr>'
+      return
+    }
+
+    allUsers.forEach(employee => {
+      let manager = managers ? managers.find(m => m.id === employee.manager_id) : null
+
+      // Check which quarters have checkins for this employee
+      let quarters = ['Q1', 'Q2', 'Q3', 'Q4']
+      let quarterCells = quarters.map(q => {
+        let hasCheckin = checkins && checkins.some(c => {
+          return c.quarter === q
+        })
+        if (q === 'Q1' && hasCheckin) {
+          return `<td class="border p-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Done</span></td>`
+        } else if (q === 'Q1') {
+          return `<td class="border p-2"><span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">Pending</span></td>`
+        } else {
+          return `<td class="border p-2"><span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">Not Open</span></td>`
+        }
+      }).join('')
+
+      tbody.innerHTML += `
+        <tr>
+          <td class="border p-2">${employee.name}</td>
+          <td class="border p-2">${manager ? manager.name : 'N/A'}</td>
+          ${quarterCells}
+        </tr>
+      `
+    })
+  }
+
+  async function loadUnlockGoals() {
+    let { data: goals, error } = await supabase
+      .from('goals')
+      .select('*, users(name)')
+      .eq('status', 'approved')
+
+    let tbody = document.getElementById('unlockTableBody')
+    tbody.innerHTML = ''
+
+    if (error || !goals || goals.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="border p-2 text-gray-400">No approved goals found.</td></tr>'
+      return
+    }
+
+    goals.forEach(goal => {
+      let lockLabel = goal.is_locked ? 'Locked' : 'Unlocked'
+      let lockColor = goal.is_locked 
+        ? 'bg-green-100 text-green-700' 
+        : 'bg-orange-100 text-orange-700'
+      let buttonLabel = goal.is_locked ? 'Unlock' : 'Re-lock'
+      let buttonColor = goal.is_locked 
+        ? 'bg-orange-500 hover:bg-orange-600' 
+        : 'bg-green-500 hover:bg-green-600'
+
+      tbody.innerHTML += `
+        <tr id="goalrow_${goal.id}">
+          <td class="border p-2">${goal.users ? goal.users.name : 'Unknown'}</td>
+          <td class="border p-2">${goal.title}</td>
+          <td class="border p-2">${new Date(goal.created_at).toLocaleDateString()}</td>
+          <td class="border p-2" id="lockstatus_${goal.id}">
+            <span class="px-2 py-1 rounded text-sm ${lockColor}">${lockLabel}</span>
+          </td>
+          <td class="border p-2">
+            <button onclick="toggleLock('${goal.id}', ${goal.is_locked})"
+              id="lockbtn_${goal.id}"
+              class="${buttonColor} text-white px-3 py-1 rounded text-sm">
+              ${buttonLabel}
+            </button>
+          </td>
+        </tr>
+      `
+    })
+  }
+
+  async function loadAuditLog() {
+    let { data: logs, error } = await supabase
+      .from('audit_log')
+      .select('*, users(name)')
+      .order('changed_at', { ascending: false })
+
+    let tbody = document.getElementById('auditTableBody')
+    tbody.innerHTML = ''
+
+    if (error || !logs || logs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="border p-2 text-gray-400">No changes recorded yet.</td></tr>'
+      return
+    }
+
+    logs.forEach(log => {
+      tbody.innerHTML += `
+        <tr>
+          <td class="border p-2 text-sm">${new Date(log.changed_at).toLocaleString()}</td>
+          <td class="border p-2 text-sm">${log.users ? log.users.name : 'Unknown'}</td>
+          <td class="border p-2 text-sm">${log.change_description}</td>
+        </tr>
+      `
+    })
+  }
+
+  async function loadCycles() {
+    let { data: cycles, error } = await supabase
+      .from('cycles')
+      .select('*')
+
+    let container = document.getElementById('cyclesList')
+    container.innerHTML = ''
+
+    if (error || !cycles) {
+      container.innerHTML = '<p class="text-gray-400">Error loading cycles.</p>'
+      return
+    }
+
+    cycles.forEach(cycle => {
+      let isOpen = cycle.is_open
+      let statusColor = isOpen ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+      let statusLabel = isOpen ? 'Open' : 'Closed'
+      let buttonLabel = isOpen ? 'Close Window' : 'Open Window'
+      let buttonColor = isOpen 
+        ? 'bg-red-500 hover:bg-red-600' 
+        : 'bg-green-500 hover:bg-green-600'
+
+      container.innerHTML += `
+        <div class="flex items-center justify-between border rounded p-4 mb-3">
+          <div>
+            <p class="font-semibold">${cycle.period.replace('_', ' ').toUpperCase()}</p>
+            <span class="px-2 py-1 rounded text-sm ${statusColor}">${statusLabel}</span>
+          </div>
+          <button onclick="toggleCycle('${cycle.id}', ${cycle.is_open})"
+            class="${buttonColor} text-white px-4 py-2 rounded text-sm font-semibold">
+            ${buttonLabel}
+          </button>
+        </div>
+      `
+    })
+  }
+
+  window.toggleLock = async function(goalId, isCurrentlyLocked) {
+    let newLockState = !isCurrentlyLocked
+
+    let { error } = await supabase
+      .from('goals')
+      .update({ is_locked: newLockState })
+      .eq('id', goalId)
+
+    if (error) {
+      alert('Error updating lock: ' + error.message)
+      return
+    }
+
+    // Add to audit log
+    await supabase.from('audit_log').insert({
+      goal_id:            goalId,
+      changed_by:         currentUser.id,
+      change_description: newLockState ? 'Goal re-locked by admin' : 'Goal unlocked by admin'
+    })
+
+    // Reload the table to reflect changes
+    loadUnlockGoals()
+    loadAuditLog()
+  }
+
+  window.toggleCycle = async function(cycleId, isCurrentlyOpen) {
+    let { error } = await supabase
+      .from('cycles')
+      .update({ is_open: !isCurrentlyOpen })
+      .eq('id', cycleId)
+
+    if (error) {
+      alert('Error updating cycle: ' + error.message)
+      return
+    }
+
+    loadCycles()
+  }
+
+  async function exportCSV() {
+    let { data: goals } = await supabase
+      .from('goals')
+      .select('*, users(name)')
+
+    if (!goals || goals.length === 0) {
+      alert('No data to export.')
+      return
+    }
+
+    let goalIds = goals.map(g => g.id)
+    let { data: checkins } = await supabase
+      .from('checkins')
+      .select('*')
+      .in('goal_id', goalIds)
+
+    let csvContent = 'Employee,Goal,UoM,Target,Actual,Status,Score\n'
+
+    goals.forEach(goal => {
+      let checkin = checkins ? checkins.find(c => c.goal_id === goal.id) : null
+      let actual = checkin ? checkin.actual_achievement || 'N/A' : 'N/A'
+      let status = checkin ? checkin.status : 'not_started'
+      let score = 'N/A'
+
+      if (checkin && checkin.actual_achievement) {
+        let t = parseFloat(goal.target)
+        let a = parseFloat(checkin.actual_achievement)
+        if (!isNaN(t) && !isNaN(a)) {
+          if (goal.uom_type === 'min')  score = Math.round((a / t) * 100) + '%'
+          if (goal.uom_type === 'max')  score = Math.round((t / a) * 100) + '%'
+          if (goal.uom_type === 'zero') score = a === 0 ? '100%' : '0%'
+        }
       }
 
-      auditBody.innerHTML += `
-        <tr>
-          <td class="border p-2 text-sm">${now}</td>
-          <td class="border p-2 text-sm">Admin</td>
-          <td class="border p-2 text-sm">${employeeName}</td>
-          <td class="border p-2 text-sm">Goal unlocked: "${goalName}"</td>
-        </tr>`
-    }
+      csvContent += `${goal.users ? goal.users.name : 'Unknown'},${goal.title},${goal.uom_type},${goal.target},${actual},${status},${score}\n`
+    })
 
-    function exportCSV() {
-      // Sample data — later this will come from Supabase
-      let csvContent = "Employee,Goal,UoM,Target,Actual,Score,Status\n"
-      csvContent += "John Doe,Achieve Sales Target,Min,500000,420000,84%,On Track\n"
-      csvContent += "John Doe,Zero Complaints,Zero,0,0,100%,Completed\n"
-      csvContent += "Jane Smith,Reduce TAT,Max,2,1.5,133%,On Track\n"
+    let blob = new Blob([csvContent], { type: 'text/csv' })
+    let url  = URL.createObjectURL(blob)
+    let a    = document.createElement('a')
+    a.href     = url
+    a.download = 'achievement_report.csv'
+    a.click()
+  }
 
-      // Create a download link and click it automatically
-      let blob = new Blob([csvContent], { type: 'text/csv' })
-      let url = URL.createObjectURL(blob)
-      let a = document.createElement('a')
-      a.href = url
-      a.download = 'achievement_report.csv'
-      a.click()
-    }
+  window.showSection = function(sectionName) {
+    document.getElementById('overview').classList.add('hidden')
+    document.getElementById('unlockGoals').classList.add('hidden')
+    document.getElementById('auditLog').classList.add('hidden')
+    document.getElementById('exportReport').classList.add('hidden')
+    document.getElementById('cycleManagement').classList.add('hidden')
+    document.getElementById(sectionName).classList.remove('hidden')
+
+    if (sectionName === 'overview')         loadOverview()
+    if (sectionName === 'unlockGoals')      loadUnlockGoals()
+    if (sectionName === 'auditLog')         loadAuditLog()
+    if (sectionName === 'cycleManagement')  loadCycles()
+  }
+
+  window.exportCSV = exportCSV
+
+  init()
   </script>
 
 </body>
