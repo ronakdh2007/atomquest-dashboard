@@ -323,6 +323,16 @@
   }
 
   function renderGoals() {
+    // Hide create goal button if goals are already submitted or approved
+    let hasSubmitted = goals.some(g => g.status === 'submitted' || g.status === 'approved')
+    let createBtn = document.getElementById('btn_createGoal')
+    if (hasSubmitted) {
+      createBtn.style.display = 'none'
+      showSection('myGoals')
+    } else {
+      createBtn.style.display = 'inline-block'
+    }
+    
     let tbody = document.getElementById('goalsTableBody')
     let totalWeightage = 0
     tbody.innerHTML = ''
@@ -331,9 +341,9 @@
       totalWeightage += goal.weightage
 
       // If goal is submitted or approved, don't show delete button
-      let actionCell = goal.status === 'draft'
+      let actionCell = goal.status === 'draft' || goal.status === 'rejected'
         ? `<button onclick="deleteGoal('${goal.id}')" 
-             class="text-red-500 hover:underline text-sm">Remove</button>`
+            class="text-red-500 hover:underline text-sm">Remove</button>`
         : `<span class="text-gray-400 text-sm">Locked</span>`
 
       // Status badge color
