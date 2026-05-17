@@ -4,29 +4,34 @@
   <title>AtomQuest Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+<body class="bg-gray-50 flex items-center justify-center h-screen">
 
-  <div class="bg-white p-8 rounded shadow w-96">
-    <h1 class="text-2xl font-bold mb-2">Goal Portal</h1>
-    <p class="text-gray-400 text-sm mb-6">Atomberg — AtomQuest Hackathon</p>
+  <div class="bg-white rounded-xl shadow-lg w-96 overflow-hidden">
+    
+    <!-- HEADER -->
+    <div class="bg-[#FDBD13] px-6 py-5">
+      <p class="text-xs font-semibold text-black/50 uppercase tracking-widest">Atomberg</p>
+      <h1 class="text-2xl font-bold text-black">Goal Portal</h1>
+      <p class="text-xs text-black/60 mt-1">AtomQuest Hackathon 1.0</p>
+    </div>
 
-    <div class="flex flex-col gap-4">
+    <div class="p-6 flex flex-col gap-4">
 
       <div>
-        <label class="font-semibold text-sm">Email</label>
+        <label class="font-semibold text-sm text-gray-700">Email Address</label>
         <input id="emailInput" type="email" placeholder="Enter your email"
-          class="w-full border p-2 rounded mt-1">
+          class="w-full border border-gray-200 p-2.5 rounded-lg mt-1 text-sm focus:outline-none focus:border-[#FDBD13]">
       </div>
 
       <p id="errorMsg" class="text-red-500 text-sm hidden"></p>
 
       <button onclick="login()"
-        class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 font-semibold">
-        Login
+        class="w-full bg-[#FDBD13] text-black py-2.5 rounded-lg hover:bg-yellow-400 font-bold text-sm transition">
+        Login →
       </button>
 
       <div class="border-t pt-3 text-xs text-gray-400">
-        <p class="font-semibold mb-1">Demo accounts:</p>
+        <p class="font-semibold mb-1 text-gray-500">Demo accounts:</p>
         <p>admin@atomberg.com — Admin</p>
         <p>amit@atomberg.com — Manager</p>
         <p>john@atomberg.com — Employee</p>

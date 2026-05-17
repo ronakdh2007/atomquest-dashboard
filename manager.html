@@ -7,25 +7,31 @@
 <body class="bg-gray-100">
 
   <!-- TOP NAVBAR -->
-  <nav class="bg-green-600 text-white px-6 py-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">Goal Portal — <span id="managerName"></span></h1>
-    <a href="index.html" class="text-sm underline">Logout</a>
+  <nav class="bg-[#FDBD13] px-6 py-3 flex justify-between items-center shadow-sm">
+    <div>
+      <p class="text-xs font-semibold text-black/40 uppercase tracking-widest">Atomberg</p>
+      <h1 class="text-lg font-bold text-black">Goal Portal — <span id="managerName"></span></h1>
+    </div>
+    <a href="index.html" 
+      class="text-xs font-semibold text-black/60 hover:text-black border border-black/20 px-3 py-1.5 rounded-lg transition">
+      Logout
+    </a>
   </nav>
 
   <div class="max-w-5xl mx-auto mt-8 px-4">
 
     <!-- SECTION SWITCH BUTTONS -->
-    <div class="flex gap-4 mb-6">
-      <button onclick="showSection('pendingApprovals')"
-        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+    <div class="flex gap-3 mb-6">
+      <button onclick="showSection('pendingApprovals')" id="btn_pendingApprovals"
+        class="section-btn bg-[#FDBD13] text-black px-4 py-2 rounded-lg text-sm font-semibold">
         Pending Approvals
       </button>
-      <button onclick="showSection('teamGoals')"
-        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+      <button onclick="showSection('teamGoals')" id="btn_teamGoals"
+        class="section-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50">
         Team Goals
       </button>
-      <button onclick="showSection('checkins')"
-        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+      <button onclick="showSection('checkins')" id="btn_checkins"
+        class="section-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50">
         Quarterly Check-ins
       </button>
     </div>
@@ -427,6 +433,12 @@
     document.getElementById('teamGoals').classList.add('hidden')
     document.getElementById('checkins').classList.add('hidden')
     document.getElementById(sectionName).classList.remove('hidden')
+
+    document.querySelectorAll('.section-btn').forEach(btn => {
+      btn.className = 'section-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50'
+    })
+    document.getElementById('btn_' + sectionName).className = 
+      'section-btn bg-[#FDBD13] text-black px-4 py-2 rounded-lg text-sm font-semibold'
 
     if (sectionName === 'teamGoals')  loadTeamGoals()
     if (sectionName === 'checkins')   loadCheckins()
