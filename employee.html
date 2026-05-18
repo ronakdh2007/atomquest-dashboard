@@ -36,6 +36,10 @@
       </button>
     </div>
 
+    <p id="goalFormStatus" class="text-gray-500 text-sm hidden">
+      Your goals have been submitted and are locked. Contact your admin if changes are needed.
+    </p>
+
     <!-- SECTION 1: CREATE GOAL FORM -->
     <div id="createGoal" class="bg-white p-6 rounded shadow">
       <h2 class="text-xl font-bold mb-4">Create New Goal</h2>
@@ -328,6 +332,7 @@
     let createBtn = document.getElementById('btn_createGoal')
     if (hasSubmitted) {
       createBtn.style.display = 'none'
+      document.getElementById('goalFormStatus').classList.remove('hidden')
       showSection('myGoals')
     } else {
       createBtn.style.display = 'inline-block'
