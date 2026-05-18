@@ -108,7 +108,7 @@
       
       <!-- WEIGHTAGE TOTAL -->
       <p class="mb-4">Total Weightage: 
-        <span id="totalWeightage" class="font-bold text-blue-600">0%</span>
+        <span id="totalWeightage" class="font-bold text-black">0%</span>
         <span class="text-gray-400 text-sm"> (must equal 100% to submit)</span>
       </p>
 
@@ -341,6 +341,18 @@
     let tbody = document.getElementById('goalsTableBody')
     let totalWeightage = 0
     tbody.innerHTML = ''
+
+    if (goals.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="border p-8 text-center text-gray-400">
+            <p class="text-lg mb-1">No goals yet</p>
+            <p class="text-sm">Click "Create New Goal" to get started.</p>
+          </td>
+        </tr>
+      `
+      return
+    }
 
     goals.forEach((goal) => {
       totalWeightage += goal.weightage
